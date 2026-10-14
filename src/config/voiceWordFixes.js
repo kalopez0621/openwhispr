@@ -20,6 +20,7 @@ const VOICE_WORD_FIXES = [
   // TriMerge
   { heard: "try merge", write: "TriMerge" },
   { heard: "tri merge", write: "TriMerge" },
+  { heard: "tri merch", write: "TriMerge" },
 
   // GoHighLevel
   { heard: "go high level", write: "GoHighLevel" },
