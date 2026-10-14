@@ -9,6 +9,8 @@ import { isAzureOpenAIEndpoint } from "../utils/urlUtils";
 import { withSessionRefresh } from "../lib/auth";
 import { getBaseLanguageCode, getLanguageLabel } from "../utils/languageSupport";
 import { convertToWav, needsWavConversion } from "../utils/audioContainer";
+// Voice: fixes personal words the speech model gets wrong (list in src/config/voiceWordFixes.js)
+import { applyWordFixes } from "../utils/applyWordFixes";
 import {
   applyChineseScript,
   mergeWhisperPrompt,
@@ -3159,7 +3161,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   }
 
   async processTranscriptionCore(text, source, wasCancelled = neverCancelled) {
-    const normalizedText = typeof text === "string" ? text.trim() : "";
+    // Remove extra spaces at the start and end of the raw transcription.
+    const trimmedText = typeof text === "string" ? text.trim() : "";
+    // Voice: swap misheard words for the right spelling (e.g. "try merge" -> "TriMerge").
+    const normalizedText = applyWordFixes(trimmedText);
 
     if (!normalizedText) {
       logger.logReasoning("TRANSCRIPTION_EMPTY_SKIPPING_REASONING", {
