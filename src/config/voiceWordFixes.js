@@ -21,6 +21,7 @@ const VOICE_WORD_FIXES = [
   { heard: "try merge", write: "TriMerge" },
   { heard: "tri merge", write: "TriMerge" },
   { heard: "tri merch", write: "TriMerge" },
+  { heard: "three merch", write: "TriMerge" },
 
   // GoHighLevel
   { heard: "go high level", write: "GoHighLevel" },
@@ -34,6 +35,10 @@ const VOICE_WORD_FIXES = [
   { heard: "and spire", write: "Enspyre" },
   { heard: "en spire", write: "Enspyre" },
   { heard: "in spire", write: "Enspyre" },
+
+  // Ollama
+  { heard: "oh llama", write: "Ollama" },
+  { heard: "O Lama", write: "Ollama" },
 
   // NOT active on purpose: "inspire" is a normal English word.
   // Turning this on would change sentences like "you inspire me" too.
