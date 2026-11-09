@@ -40,6 +40,22 @@ const VOICE_WORD_FIXES = [
   { heard: "oh llama", write: "Ollama" },
   { heard: "O Lama", write: "Ollama" },
 
+  // Added Nov 9, 2026 from dictation testing
+  { heard: "Sam Dot gov", write: "SAM.gov" },
+  { heard: "Sam dog", write: "SAM.gov" },
+  { heard: "clawed code", write: "Claude Code" },
+  { heard: "clot code", write: "Claude Code" },
+  { heard: "cloth coat", write: "Claude Code" },
+  { heard: "cloud code", write: "Claude Code" },
+  { heard: "Olama", write: "Ollama" },
+  { heard: "Streamlet", write: "Streamlit" },
+  { heard: "Sam.gov", write: "SAM.gov" },
+  { heard: "Sam Dotgov", write: "SAM.gov" },
+  { heard: "Sam dot gov", write: "SAM.gov" },
+  { heard: "TriMech", write: "TriMerge" },
+  { heard: "Navada", write: "Navodda" },
+  { heard: "SamDotgov", write: "SAM.gov" },
+
   // NOT active on purpose: "inspire" is a normal English word.
   // Turning this on would change sentences like "you inspire me" too.
   // { heard: "inspire", write: "Enspyre" },
