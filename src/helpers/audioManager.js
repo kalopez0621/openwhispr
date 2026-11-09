@@ -11,6 +11,7 @@ import { getBaseLanguageCode, getLanguageLabel } from "../utils/languageSupport"
 import { convertToWav, needsWavConversion } from "../utils/audioContainer";
 // Voice: fixes personal words the speech model gets wrong (list in src/config/voiceWordFixes.js)
 import { applyWordFixes } from "../utils/applyWordFixes";
+import { removeFillerWords } from "../utils/removeFillerWords";
 import { formatSpokenPatterns } from "../utils/formatSpokenPatterns";
 import {
   applyChineseScript,
@@ -3165,9 +3166,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     // Remove extra spaces at the start and end of the raw transcription.
     const trimmedText = typeof text === "string" ? text.trim() : "";
     // Voice: swap misheard words for the right spelling (e.g. "try merge" -> "TriMerge").
+    // Voice: remove filler words and repeats (e.g. "Um, I want" -> "I want", "or or" -> "or").
     // Voice: write spoken phone numbers, emails, websites, times and years the usual way
     // (e.g. "karla at gmail dot com" -> "karla@gmail.com").
-    const normalizedText = formatSpokenPatterns(applyWordFixes(trimmedText));
+    const normalizedText = formatSpokenPatterns(removeFillerWords(applyWordFixes(trimmedText)));
 
     if (!normalizedText) {
       logger.logReasoning("TRANSCRIPTION_EMPTY_SKIPPING_REASONING", {

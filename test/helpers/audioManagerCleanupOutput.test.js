@@ -3,6 +3,9 @@ const assert = require("node:assert/strict");
 const { createRendererServer, installBrowserGlobals } = require("../lib/rendererTestHarness");
 
 const RAW = "um so can you uh send me the report by friday";
+// Expectation changed (Nov 9, 2026): filler removal runs before output in
+// processTranscriptionCore, so the raw fallback comes back without "um"/"uh".
+const RAW_WITHOUT_FILLERS = "So can you send me the report by friday";
 const CLEAN = "Can you send me the report by Friday?";
 const DUPLICATE = `**Cleaned transcript:**\n${CLEAN}\n${CLEAN}`;
 const MESSAGE_KEY = "hooks.audioRecording.errorDescriptions.cleanupDuplicated";
@@ -134,7 +137,8 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
     window.electronAPI.processLocalReasoning = async () => ({ success: true, text: DUPLICATE });
     const manager = createManager();
     const result = await manager.processTranscriptionCore(RAW, "local");
-    assert.equal(result, RAW);
+    // Filler removal runs first, so the fallback text has no "um"/"uh" (Nov 9, 2026).
+    assert.equal(result, RAW_WITHOUT_FILLERS);
     assert.equal(manager._takePendingResultExtras().cleanupFailure.messageKey, MESSAGE_KEY);
     let saved;
     window.electronAPI.recordAnalyticsEvent = async () => {};
@@ -143,6 +147,7 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
       return { success: true };
     };
     await manager.saveTranscription(result, RAW);
-    assert.deepEqual(saved, { text: RAW, rawText: RAW });
+    // The saved text is the filler-free output; the raw text is still the original.
+    assert.deepEqual(saved, { text: RAW_WITHOUT_FILLERS, rawText: RAW });
   });
 });
