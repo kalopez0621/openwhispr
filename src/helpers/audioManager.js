@@ -13,6 +13,7 @@ import { convertToWav, needsWavConversion } from "../utils/audioContainer";
 import { applyWordFixes } from "../utils/applyWordFixes";
 import { removeFillerWords } from "../utils/removeFillerWords";
 import { formatSpokenPatterns } from "../utils/formatSpokenPatterns";
+import { applyVoiceShortcuts } from "../utils/applyVoiceShortcuts";
 import {
   applyChineseScript,
   mergeWhisperPrompt,
@@ -3169,7 +3170,11 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     // Voice: remove filler words and repeats (e.g. "Um, I want" -> "I want", "or or" -> "or").
     // Voice: write spoken phone numbers, emails, websites, times and years the usual way
     // (e.g. "karla at gmail dot com" -> "karla@gmail.com").
-    const normalizedText = formatSpokenPatterns(removeFillerWords(applyWordFixes(trimmedText)));
+    // Voice: last step, swap a spoken shortcut for saved text
+    // (e.g. "insert my email" -> your email, from voiceShortcuts.local.js).
+    const normalizedText = applyVoiceShortcuts(
+      formatSpokenPatterns(removeFillerWords(applyWordFixes(trimmedText)))
+    );
 
     if (!normalizedText) {
       logger.logReasoning("TRANSCRIPTION_EMPTY_SKIPPING_REASONING", {
