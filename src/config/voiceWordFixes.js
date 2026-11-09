@@ -40,6 +40,11 @@ const VOICE_WORD_FIXES = [
   { heard: "oh llama", write: "Ollama" },
   { heard: "O Lama", write: "Ollama" },
 
+  // Added Nov 9, 2026: Teams (phrases only, because "teens" is a real word)
+  { heard: "Microsoft Teens", write: "Microsoft Teams" },
+  { heard: "Teens meeting", write: "Teams meeting" },
+  { heard: "Teens call", write: "Teams call" },
+
   // Added Nov 9, 2026 from dictation testing
   { heard: "Sam Dot gov", write: "SAM.gov" },
   { heard: "Sam dog", write: "SAM.gov" },
