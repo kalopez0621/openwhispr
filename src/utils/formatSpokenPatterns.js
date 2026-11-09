@@ -117,10 +117,7 @@ const DOMAIN = LABEL + "(?:" + ANY_DOT + LABEL + ")*?" + ANY_DOT + ENDING;
 
 // Turns spoken dots into real dots, removes spaces and lowercases.
 function cleanAddress(text) {
-  return text
-    .replace(new RegExp(SPOKEN_DOT, "giu"), ".")
-    .replace(/\s+/g, "")
-    .toLowerCase();
+  return text.replace(new RegExp(SPOKEN_DOT, "giu"), ".").replace(/\s+/g, "").toLowerCase();
 }
 
 // ---------------------------------------------------------------------------
@@ -170,10 +167,42 @@ const EMAIL = new RegExp(
 // They are never treated as the name part of an email; the website step still
 // fixes the domain ("look at google.com").
 const NOT_EMAIL_NAMES = new Set([
-  "look", "looking", "looked", "me", "us", "him", "her", "them", "it", "is", "are",
-  "was", "were", "be", "am", "here", "there", "back", "stay", "arrive", "arrived",
-  "meet", "available", "find", "found", "see", "check", "visit", "reach", "contact",
-  "online", "posted", "listed", "work", "works", "working",
+  "look",
+  "looking",
+  "looked",
+  "me",
+  "us",
+  "him",
+  "her",
+  "them",
+  "it",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "am",
+  "here",
+  "there",
+  "back",
+  "stay",
+  "arrive",
+  "arrived",
+  "meet",
+  "available",
+  "find",
+  "found",
+  "see",
+  "check",
+  "visit",
+  "reach",
+  "contact",
+  "online",
+  "posted",
+  "listed",
+  "work",
+  "works",
+  "working",
 ]);
 
 function formatEmails(text) {
@@ -193,7 +222,10 @@ function formatEmails(text) {
 const WEBSITE = new RegExp(
   "(?<![\\p{L}\\p{N}@.])(?!(?:a|an|the|el|la|los|las|un|una)\\s)" +
     LABEL +
-    "(?:" + SPOKEN_DOT + LABEL + ")*?" +
+    "(?:" +
+    SPOKEN_DOT +
+    LABEL +
+    ")*?" +
     SPOKEN_DOT +
     ENDING,
   "giu"
@@ -208,8 +240,7 @@ function formatWebsites(text) {
 // ---------------------------------------------------------------------------
 
 // Minutes: "oh five", "fifteen", "thirty", "forty five" / "forty-five".
-const MINUTES =
-  "(?:oh" + GAP + ONES + "|" + TEENS + "|" + MINUTE_TENS + "(?:" + GAP + ONES + ")?)";
+const MINUTES = "(?:oh" + GAP + ONES + "|" + TEENS + "|" + MINUTE_TENS + "(?:" + GAP + ONES + ")?)";
 // AM / PM in any form: AM, am, a.m., a.m, A M.
 const AM_PM = "([ap])\\.?\\s?m" + END + "(\\.)?";
 
@@ -221,9 +252,7 @@ const TIME = new RegExp(
 function formatTimes(text) {
   return text.replace(TIME, (match, hour, minutes, ampm, trailingDot, offset, whole) => {
     const h = wordsToNumber(hour);
-    const time = minutes
-      ? `${h}:${String(wordsToNumber(minutes)).padStart(2, "0")}`
-      : `${h}`;
+    const time = minutes ? `${h}:${String(wordsToNumber(minutes)).padStart(2, "0")}` : `${h}`;
     let result = `${time} ${ampm.toUpperCase()}M`;
 
     // "p.m." may also have been the end of the sentence. Keep that period when the
@@ -269,6 +298,125 @@ function formatYears(text) {
 }
 
 // ---------------------------------------------------------------------------
+// 6. Dates (English only): "November twenty fifth" -> "November 25th"
+//    (Runs BEFORE the year rule; see the order in formatSpokenPatterns.)
+// ---------------------------------------------------------------------------
+
+// Ordinal words ("first", "twenty-fifth") and their values.
+const ORDINAL_WORDS = {
+  first: 1,
+  second: 2,
+  third: 3,
+  fourth: 4,
+  fifth: 5,
+  sixth: 6,
+  seventh: 7,
+  eighth: 8,
+  ninth: 9,
+  tenth: 10,
+  eleventh: 11,
+  twelfth: 12,
+  thirteenth: 13,
+  fourteenth: 14,
+  fifteenth: 15,
+  sixteenth: 16,
+  seventeenth: 17,
+  eighteenth: 18,
+  nineteenth: 19,
+  twentieth: 20,
+  thirtieth: 30,
+};
+const ORDINAL_ONES = "(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth)" + END;
+const ORDINAL_TEENS_AND_TENS =
+  "(?:tenth|eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|" +
+  "eighteenth|nineteenth|twentieth|thirtieth)" +
+  END;
+const DAY_TENS = "(?:twenty|thirty)" + END;
+
+// A spoken day, longest forms first:
+//   "twenty fifth" / "twenty-five" / "thirtieth" / "eleventh" / "first" / "twelve" / "twenty" / "nine"
+const DAY =
+  "(?:" +
+  DAY_TENS +
+  GAP +
+  "(?:" +
+  ORDINAL_ONES +
+  "|" +
+  ONES +
+  ")" +
+  "|" +
+  ORDINAL_TEENS_AND_TENS +
+  "|" +
+  ORDINAL_ONES +
+  "|" +
+  TEENS +
+  "|" +
+  DAY_TENS +
+  "|" +
+  ONES +
+  ")";
+
+// Month name (any case) right before the day.
+//   group 1: the month   group 2: the day words
+const SPOKEN_DATE = new RegExp(START + "(" + MONTHS + ")" + END + "\\s+(" + DAY + ")", "giu");
+
+// A number from 10 to 99 right after the day, e.g. the "twenty six" in
+// "November twenty twenty six". Then the "twenty" is the start of a year, not a day.
+const YEAR_CONTINUES = new RegExp("^" + GAP + TEN_TO_99, "iu");
+
+// Month name (any case) followed by a day already in digits ("november 25th").
+// Used only to capitalize the month.
+const MONTH_WITH_DIGIT_DAY = new RegExp(
+  START + "(" + MONTHS + ")(?=\\s+(?:[1-9]|[12]\\d|3[01])(?:st|nd|rd|th)?(?![\\p{L}\\p{N}]))",
+  "giu"
+);
+
+// Turns day words into a number: "twenty fifth" -> 25, "third" -> 3, "twelve" -> 12.
+function dayWordsToNumber(words) {
+  return words
+    .toLowerCase()
+    .split(/[\s-]+/)
+    .reduce((total, word) => total + (ORDINAL_WORDS[word] ?? NUMBER_WORDS[word] ?? 0), 0);
+}
+
+// Ordinal ending for a day: 1st, 2nd, 3rd, 4th ... 11th, 12th, 13th ... 21st, 22nd ...
+function ordinalSuffix(day) {
+  if (day >= 11 && day <= 13) return "th";
+  return { 1: "st", 2: "nd", 3: "rd" }[day % 10] || "th";
+}
+
+// Capitalizes a month name: "november" -> "November".
+function capitalizeMonth(month) {
+  return month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
+}
+
+function formatDates(text) {
+  return (
+    text
+      // Spoken day -> digits: "November twenty fifth" -> "November 25th"
+      .replace(SPOKEN_DATE, (match, month, dayWords, offset, whole) => {
+        const day = dayWordsToNumber(dayWords);
+
+        // Only real days of the month.
+        if (day < 1 || day > 31) return match;
+
+        // "November twenty twenty six": the "twenty" belongs to the year, so leave
+        // it for the year rule ("November 2026").
+        const after = whole.slice(offset + match.length);
+        if (dayWords.toLowerCase() === "twenty" && YEAR_CONTINUES.test(after)) return match;
+
+        // "you may first check..." uses "may" as a verb, not the month.
+        if (month === "may" && /^(first|second)$/i.test(dayWords)) return match;
+
+        // Capitalize the month ("november" -> "November").
+        return `${capitalizeMonth(month)} ${day}${ordinalSuffix(day)}`;
+      })
+      // Day already in digits: only capitalize the month ("november 25th" -> "November 25th")
+      .replace(MONTH_WITH_DIGIT_DAY, (month) => capitalizeMonth(month))
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------------
 
@@ -280,6 +428,8 @@ function formatYears(text) {
  *   instead of "karla at gmail.com".
  * - Phone numbers before times and years, which also use number words.
  * - Times before years, so "three twenty PM" stays a time.
+ * - Dates before years, so "November twenty fifth, twenty twenty six"
+ *   becomes "November 25th, 2026".
  */
 export function formatSpokenPatterns(text) {
   // If there is no text, there is nothing to format.
@@ -290,6 +440,7 @@ export function formatSpokenPatterns(text) {
   formatted = formatWebsites(formatted);
   formatted = formatPhoneNumbers(formatted);
   formatted = formatTimes(formatted);
+  formatted = formatDates(formatted); // must come before years
   formatted = formatYears(formatted);
   return formatted;
 }
