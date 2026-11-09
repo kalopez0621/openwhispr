@@ -55,6 +55,8 @@ const VOICE_WORD_FIXES = [
   { heard: "TriMech", write: "TriMerge" },
   { heard: "Navada", write: "Navodda" },
   { heard: "SamDotgov", write: "SAM.gov" },
+  { heard: "openforlunch", write: "openforlaunch" },
+  { heard: "Carla", write: "Karla" },
 
   // NOT active on purpose: "inspire" is a normal English word.
   // Turning this on would change sentences like "you inspire me" too.
