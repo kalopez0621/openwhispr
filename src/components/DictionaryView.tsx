@@ -21,6 +21,8 @@ import { ConfirmDialog } from "./ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { useToast } from "./ui/useToast";
 import SnippetsView from "./SnippetsView";
+// Voice: tab that lists and manages word fixes.
+import WordFixesView from "./WordFixesView";
 import DictionaryEmptyIllustration from "./DictionaryEmptyIllustration";
 import { useSettings } from "../hooks/useSettings";
 import { getAgentName } from "../utils/agentName";
@@ -211,6 +213,11 @@ export default function DictionaryView() {
             <PanelRight size={17} />
             {t("dictionary.tabSnippets")}
           </TabsTrigger>
+          {/* Voice: Word Fixes tab (English label on purpose, see WordFixesView.tsx) */}
+          <TabsTrigger value="wordFixes" variant="pill">
+            <Pencil size={17} />
+            Word Fixes
+          </TabsTrigger>
         </TabsList>
       </div>
 
@@ -381,6 +388,11 @@ export default function DictionaryView() {
 
       <TabsContent value="snippets" className="flex-1 min-h-0 mt-0 overflow-y-auto">
         <SnippetsView />
+      </TabsContent>
+
+      {/* Voice: Word Fixes tab content */}
+      <TabsContent value="wordFixes" className="flex-1 min-h-0 mt-0 overflow-y-auto">
+        <WordFixesView />
       </TabsContent>
     </Tabs>
   );

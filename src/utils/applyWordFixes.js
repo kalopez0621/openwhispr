@@ -2,13 +2,28 @@
  * applyWordFixes.js
  *
  * Replaces words the speech model got wrong with the right spelling,
- * using the list in src/config/voiceWordFixes.js.
+ * using the list in src/config/voiceWordFixes.js plus the fixes added
+ * in the app (saved by src/utils/userWordFixes.js).
  *
  * Example: "I met with try merge" becomes "I met with TriMerge".
  */
 
 // Brings in your personal word list.
 import VOICE_WORD_FIXES from "../config/voiceWordFixes";
+// Brings in the fixes added from inside the app (Home history > Edit > Add fix).
+import { getUserWordFixes } from "./userWordFixes";
+
+/**
+ * Returns the built-in list plus the fixes added in the app.
+ * If both lists have the same "heard" phrase, the one added in the app wins,
+ * because it is the newer decision.
+ */
+export function getAllWordFixes() {
+  const userFixes = getUserWordFixes();
+  const userHeard = new Set(userFixes.map((fix) => fix.heard.toLowerCase()));
+  const builtIn = VOICE_WORD_FIXES.filter((fix) => !userHeard.has(fix.heard.toLowerCase()));
+  return [...builtIn, ...userFixes];
+}
 
 /**
  * Some characters (like . or ?) have special meaning in search patterns.
@@ -27,7 +42,7 @@ function escapeForSearch(word) {
  * - Only matches whole words, so "try merged" is left alone.
  * - Checks longer phrases first, so a short fix never breaks a longer one.
  */
-export function applyWordFixes(text, fixes = VOICE_WORD_FIXES) {
+export function applyWordFixes(text, fixes = getAllWordFixes()) {
   // If there is no text, there is nothing to fix.
   if (typeof text !== "string" || !text) return text;
 
